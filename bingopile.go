@@ -38,31 +38,72 @@ type Slides struct {
 
 type Cards struct {
 	Header string
-	Cards []Card
+	Cards []CardFmt
+}
+
+type CardFmt struct {
+	Header [len(game)]string
+	Content [len(game)][len(game)]string
 }
 
 const CardTemp = `<html><head><title>{{.Header}}</title><body>
-<table>
+{{range .Cards}}
+<table style="break-inside: avoid; border: 1px solid black; float: left">
+<tr>
+{{range .Header}}
+<th style="height: 90px; width: 90px; font-size: xx-large">{{.}}</th>
+{{end}}
+{{range .Content}}
+<tr>
+{{range .}}
+<td style="border: 1px solid black; height: 90px; width: 90px; text-align: center; font-size:small">{{.}}</td>
+{{end}}
+</tr>
+{{end}}
 </table>
+{{end}}
 </body></html>`
 const SlideTemp = `<html><head><title>{{.Header}}</title><body>
 {{range .Slides}}
-<h1>{{.Saint.Name}}</h1>
+<div style="break-inside: avoid; break-after: always; break-before: always; width: 100%">
+<div style="float: left; width: 70%"><h1>{{.Saint.Bingo}}</h1><h2 style="text-align: center">{{.Saint.Name}}</h2>
+<p style="text-align: center"><img src="{{.Saint.Photo}}" alt="{{.Saint.Name}}" /></p>
+<p>{{.Saint.Facts}}</p>
+<div style="float: right; width: 20%">
 <p>Previous:</p>
 <ul>
 {{range .Hist}}
 <li>{{.}}</li>
 {{end}}
 </ul>
+</div>
+</div>
 {{end}}
 </body></html>`
+
+func refmtcard(in Card) CardFmt {
+	var newtitle [len(game)]string
+	var newcontent [len(game)][len(game)]string
+	for i := 0; i < len(game); i++ {
+		newtitle[i] = string(in.Header[i])
+	}
+	for i := 0; i < len(game); i++ {
+		for j := 0; j < len(game); j++ {
+			newcontent[i][j] = in.Content[j][i]
+		}
+	}
+	return CardFmt {
+		Header: newtitle,
+		Content: newcontent,
+	}
+}
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	var filename string = os.Args[1]
 	participants, err := strconv.Atoi(os.Args[2])
-	//var cardfile string = os.Args[3]
-	//var slidefile string = os.Args[4]
+	var cardfile string = os.Args[3]
+	var slidefile string = os.Args[4]
 	if err != nil {
 		os.Exit(1)
 	}
@@ -97,6 +138,7 @@ func main() {
 	}
 	fmt.Println("Cards:")
 	var cards []Card
+	var fmtcards []CardFmt
 	for i := 0; i < participants; i++ {
 		fmt.Println(i)
 		newcard := Card {
@@ -112,6 +154,7 @@ func main() {
 			fmt.Println(string(bl), dest)
 			cards[i].Content[j] = dest
 		}
+		fmtcards = append(fmtcards, refmtcard(cards[i]))
 	}
 	fmt.Println("Slides")
 	var slides []Slide
@@ -137,7 +180,26 @@ func main() {
 		Slides: slides,
 	}
 	var slidetemp = template.Must(template.New("slides").Parse(SlideTemp))
-	if slidetemp.Execute(os.Stdout, slideobj) != nil {
+	sf, err := os.Create(slidefile)
+	if err != nil {
 		os.Exit(1)
 	}
+	if slidetemp.Execute(sf, slideobj) != nil {
+		os.Exit(1)
+	}
+	sf.Close()
+	var cardtemp = template.Must(template.New("cards").Parse(CardTemp))
+	cardsobj := Cards {
+		Header: game,
+		Cards: fmtcards,
+	}
+	cf, err := os.Create(cardfile)
+	if err != nil {
+		os.Exit(1)
+	}
+	if cardtemp.Execute(cf, cardsobj) != nil {
+		os.Exit(1)
+	}
+	cf.Close()
+
 }
