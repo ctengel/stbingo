@@ -48,7 +48,7 @@ type CardFmt struct {
 
 const CardTemp = `<html><head><title>{{.Header}}</title><body>
 {{range .Cards}}
-<table style="break-inside: avoid; border: 1px solid black; float: left">
+<table style="break-inside: avoid; border: 1px solid black; float: left; margin: 15px">
 <tr>
 {{range .Header}}
 <th style="height: 90px; width: 90px; font-size: xx-large">{{.}}</th>
