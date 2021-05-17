@@ -66,9 +66,7 @@ const CardTemp = `<html><head><title>{{.Header}}</title><body>
 const SlideTemp = `<html><head><title>{{.Header}}</title><body>
 {{range .Slides}}
 <div style="break-inside: avoid; break-after: always; break-before: always; width: 100%">
-<div style="float: left; width: 70%"><h1>{{.Saint.Bingo}}</h1><h2 style="text-align: center">{{.Saint.Name}}</h2>
-<p style="text-align: center"><img src="{{.Saint.Photo}}" alt="{{.Saint.Name}}" /></p>
-<p>{{.Saint.Facts}}</p>
+
 <div style="float: right; width: 20%">
 <p>Previous:</p>
 <ul>
@@ -77,9 +75,17 @@ const SlideTemp = `<html><head><title>{{.Header}}</title><body>
 {{end}}
 </ul>
 </div>
+
+<div style="width: 70%"><h1>{{.Saint.Bingo}}</h1><h2 style="text-align: center">{{.Saint.Name}}</h2>
+<p style="text-align: center"><img src="{{.Saint.Photo}}" alt="{{.Saint.Name}}" style="max-height: 600px; height: 100%; width: auto" /></p>
+<p style="text-align: center">{{.Saint.Facts}}</p>
+</div>
+
 </div>
 {{end}}
 </body></html>`
+
+const frei = true
 
 func refmtcard(in Card) CardFmt {
 	var newtitle [len(game)]string
@@ -153,6 +159,9 @@ func main() {
 			}
 			fmt.Println(string(bl), dest)
 			cards[i].Content[j] = dest
+		}
+		if frei {
+			cards[i].Content[len(game)/2][len(game)/2] = "FREE"
 		}
 		fmtcards = append(fmtcards, refmtcard(cards[i]))
 	}
