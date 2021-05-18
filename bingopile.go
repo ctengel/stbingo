@@ -36,6 +36,11 @@ type Slides struct {
 	Slides []Slide
 }
 
+type Games struct {
+	Header string
+	Games []Slides
+}
+
 type Cards struct {
 	Header string
 	Cards []CardFmt
@@ -64,6 +69,8 @@ const CardTemp = `<html><head><title>{{.Header}}</title><body>
 {{end}}
 </body></html>`
 const SlideTemp = `<html><head><title>{{.Header}}</title><body>
+{{range .Games}}
+<h1>Begin {{.Header}}</h1>
 {{range .Slides}}
 <div style="break-inside: avoid; break-after: always; break-before: always; width: 100%">
 
@@ -83,9 +90,66 @@ const SlideTemp = `<html><head><title>{{.Header}}</title><body>
 
 </div>
 {{end}}
+<h1 style="break-before: always">END {{.Header}}</h1>
+{{end}}
 </body></html>`
 
 const frei = true
+
+func gengameslides(bingodata []Saint, gamenum int) Slides {
+	var slides []Slide
+	var past []string
+	callouts := rand.Perm(len(bingodata))
+	for _, i := range callouts {
+		if bingodata[i].Callable {
+			newslide := Slide {
+				Saint: bingodata[i],
+				Hist: past,
+				Header: game,
+			}
+			slides = append(slides, newslide)
+			past = append(past, string(bingodata[i].Bingo) + " " + bingodata[i].Name)
+
+		}
+	}
+	for _, slide := range slides {
+		fmt.Println(slide)
+	}
+	slideobj := Slides {
+		Header: "GAME " + strconv.Itoa(gamenum),
+		Slides: slides,
+	}
+	return slideobj
+}
+
+func htmlout(templ *template.Template, data interface{}, outfile string) {
+	fh, err := os.Create(outfile)
+	if err != nil {
+		panic(err)
+	}
+	defer fh.Close()
+	if templ.Execute(fh, data) != nil {
+		panic(err)
+	}
+}
+
+func slidesout(games []Slides, outfile string) {
+	gamesobj := Games {
+		Header: game,
+		Games: games,
+	}
+	var slidetemp = template.Must(template.New("slides").Parse(SlideTemp))
+	htmlout(slidetemp, gamesobj, outfile)
+}
+
+func cardsout(cards []CardFmt, outfile string) {
+	var cardtemp = template.Must(template.New("cards").Parse(CardTemp))
+	cardsobj := Cards {
+		Header: game,
+		Cards: cards,
+	}
+	htmlout(cardtemp, cardsobj, outfile)
+}
 
 func refmtcard(in Card) CardFmt {
 	var newtitle [len(game)]string
@@ -109,7 +173,8 @@ func main() {
 	var filename string = os.Args[1]
 	participants, err := strconv.Atoi(os.Args[2])
 	var cardfile string = os.Args[3]
-	var slidefile string = os.Args[4]
+	numgames, err := strconv.Atoi(os.Args[4])
+	var slidefile string = os.Args[5]
 	if err != nil {
 		os.Exit(1)
 	}
@@ -166,49 +231,10 @@ func main() {
 		fmtcards = append(fmtcards, refmtcard(cards[i]))
 	}
 	fmt.Println("Slides")
-	var slides []Slide
-	var past []string
-	callouts := rand.Perm(len(bingodata))
-	for _, i := range callouts {
-		if bingodata[i].Callable {
-			newslide := Slide {
-				Saint: bingodata[i],
-				Hist: past,
-				Header: game,
-			}
-			slides = append(slides, newslide)
-			past = append(past, string(bingodata[i].Bingo) + " " + bingodata[i].Name)
-
-		}
+	var mygames []Slides
+	for i := 1; i <= numgames; i++ {
+		mygames = append(mygames, gengameslides(bingodata, i))
 	}
-	for _, slide := range slides {
-		fmt.Println(slide)
-	}
-	slideobj := Slides {
-		Header: game,
-		Slides: slides,
-	}
-	var slidetemp = template.Must(template.New("slides").Parse(SlideTemp))
-	sf, err := os.Create(slidefile)
-	if err != nil {
-		os.Exit(1)
-	}
-	if slidetemp.Execute(sf, slideobj) != nil {
-		os.Exit(1)
-	}
-	sf.Close()
-	var cardtemp = template.Must(template.New("cards").Parse(CardTemp))
-	cardsobj := Cards {
-		Header: game,
-		Cards: fmtcards,
-	}
-	cf, err := os.Create(cardfile)
-	if err != nil {
-		os.Exit(1)
-	}
-	if cardtemp.Execute(cf, cardsobj) != nil {
-		os.Exit(1)
-	}
-	cf.Close()
-
+	slidesout(mygames, slidefile)
+	cardsout(fmtcards, cardfile)
 }
