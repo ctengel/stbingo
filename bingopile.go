@@ -74,6 +74,7 @@ const SlideTemp = `<html><head><title>{{.Header}}</title><body>
 {{range .Slides}}
 <div style="break-inside: avoid; break-after: always; break-before: always; width: 100%">
 
+<!--
 <div style="float: right; width: 20%">
 <p>Previous:</p>
 <ul>
@@ -82,11 +83,17 @@ const SlideTemp = `<html><head><title>{{.Header}}</title><body>
 {{end}}
 </ul>
 </div>
+-->
+<table><tr><td>
+<h1 style="font-size: xxx-large">{{.Saint.Bingo}}</h1><h2 style="text-align: center; font-size: xxx-large">{{.Saint.Name}}</h2><p style="text-align: center; font-size: xx-large">{{.Saint.Facts}}</p>
 
-<div style="width: 70%"><h1>{{.Saint.Bingo}}</h1><h2 style="text-align: center">{{.Saint.Name}}</h2>
-<p style="text-align: center"><img src="{{.Saint.Photo}}" alt="{{.Saint.Name}}" style="max-height: 550px; height: 100%; width: auto" /></p>
-<p style="text-align: center; font-size: x-large">{{.Saint.Facts}}</p>
-</div>
+</td><td>
+<p style="text-align: center"><img src="{{.Saint.Photo}}" alt="{{.Saint.Name}}" style="max-height: 750px; min-height: 750px; height: 100%; width: auto" /></p>
+</td></tr>
+<tr><td colspan="2" style="font-size: xx-small">{{range .Hist}}{{.}}, {{end}}</td></tr>
+</td></tr>
+</table>
+<!--<div style="width: 70%">--><!--</div>-->
 
 </div>
 {{end}}
