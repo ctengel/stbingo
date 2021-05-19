@@ -53,7 +53,7 @@ type CardFmt struct {
 
 const CardTemp = `<html><head><title>{{.Header}}</title><body>
 {{range .Cards}}
-<table style="break-inside: avoid; border: 1px solid black; float: left; margin: 15px">
+<table style="break-inside: avoid; border: 1px solid black; float: left; margin: 18px">
 <tr>
 {{range .Header}}
 <th style="height: 90px; width: 90px; font-size: xx-large">{{.}}</th>
@@ -78,14 +78,14 @@ const SlideTemp = `<html><head><title>{{.Header}}</title><body>
 <p>Previous:</p>
 <ul>
 {{range .Hist}}
-<li>{{.}}</li>
+<li style="font-size: x-small">{{.}}</li>
 {{end}}
 </ul>
 </div>
 
 <div style="width: 70%"><h1>{{.Saint.Bingo}}</h1><h2 style="text-align: center">{{.Saint.Name}}</h2>
-<p style="text-align: center"><img src="{{.Saint.Photo}}" alt="{{.Saint.Name}}" style="max-height: 600px; height: 100%; width: auto" /></p>
-<p style="text-align: center">{{.Saint.Facts}}</p>
+<p style="text-align: center"><img src="{{.Saint.Photo}}" alt="{{.Saint.Name}}" style="max-height: 550px; height: 100%; width: auto" /></p>
+<p style="text-align: center; font-size: x-large">{{.Saint.Facts}}</p>
 </div>
 
 </div>
